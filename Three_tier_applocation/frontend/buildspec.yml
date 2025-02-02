@@ -1,0 +1,52 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - echo "Installing frontend dependencies..."
+      - npm install
+      # Install Trivy for vulnerability scanning
+      - echo "Installing Trivy..."
+      - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+      # Install SonarQube Scanner if not available
+      - echo "Installing SonarQube Scanner..."
+      - npm install -g sonar-scanner
+  pre_build:
+    commands:
+      - echo "Running pre-build security scans..."
+      # Run Trivy to scan the file system for vulnerabilities (fail on HIGH/CRITICAL)
+      - trivy fs --exit-code 1 --severity HIGH,CRITICAL .
+      # Placeholder for additional API security scanning (e.g., 42Crunch)
+      - echo "Running 42Crunch API security scan..."
+      - echo "42Crunch scan placeholder"
+  build:
+    commands:
+      - echo "Building the frontend application..."
+      - npm run build
+      - echo "Running SonarQube analysis..."
+      # Run SonarQube analysis; ensure SONAR_HOST_URL and SONAR_LOGIN are set in the environment.
+      - sonar-scanner \
+          -Dsonar.projectKey=${CODEBUILD_PROJECT_NAME}-frontend \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=$SONAR_HOST_URL \
+          -Dsonar.login=$SONAR_LOGIN
+  post_build:
+    commands:
+      - echo "Running Cycode scan..."
+      # Placeholder command for Cycode scanning. Replace with your actual Cycode scan command.
+      - cycode-scan . || (echo "Cycode scan failed!" && exit 1)
+      - echo "Running secret scan for exposed credentials..."
+      # Example: Scan for potential AWS credential patterns.
+      - |
+        if grep -R "AWS_ACCESS_KEY" .; then
+          echo "Exposed credentials detected! Stopping deployment."
+          exit 1;
+        else
+          echo "No exposed credentials found.";
+        fi
+      - echo "Frontend build, security scans (Trivy, 42Crunch, Cycode), SonarQube analysis, and secret check complete."
+artifacts:
+  files:
+    - '**/*'

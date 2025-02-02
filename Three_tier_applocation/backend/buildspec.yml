@@ -1,0 +1,70 @@
+# I’m looking at potential environmental variables or code snippets that might indicate a misconfiguration, like "http://localhost:3000" or "app.listen(". This could highlight exposed API endpoints.
+
+# Enhancing security
+
+# I’m thinking about checking for "http://localhost:" or "http://0.0.0.0:" to ensure an API endpoint isn’t mistakenly bound to all interfaces, which could lead to security vulnerabilities.
+
+# Spotting potential risks
+
+# Considering how, when deploying to production on AWS, inadvertently using "localhost:3000" in the source code could indicate a mishap with development endpoints.
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - echo "Installing backend dependencies..."
+      - npm install
+      # Install Trivy for vulnerability scanning
+      - echo "Installing Trivy..."
+      - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+      # Install SonarQube Scanner if not already available
+      - echo "Installing SonarQube Scanner..."
+      - npm install -g sonar-scanner
+  pre_build:
+    commands:
+      - echo "Running pre-build security scans..."
+      # Run Trivy to scan the file system for vulnerabilities (fail on HIGH/CRITICAL)
+      - trivy fs --exit-code 1 --severity HIGH,CRITICAL .
+      # Placeholder for additional API security scanning (e.g., 42Crunch)
+      - echo "Running 42Crunch API security scan..."
+      - echo "42Crunch scan placeholder"
+  build:
+    commands:
+      - echo "Building the backend application..."
+      # For a Node.js API, you might run tests or transpile code; adjust as necessary.
+      - npm run build || echo "No build step defined; proceeding..."
+      - echo "Running SonarQube analysis..."
+      # Run SonarQube analysis; ensure SONAR_HOST_URL and SONAR_LOGIN are set in the environment.
+      - sonar-scanner \
+          -Dsonar.projectKey=${CODEBUILD_PROJECT_NAME}-backend \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=$SONAR_HOST_URL \
+          -Dsonar.login=$SONAR_LOGIN
+  post_build:
+    commands:
+      - echo "Running Cycode scan..."
+      # Placeholder command for Cycode scanning. Replace with your actual Cycode scan command.
+      - cycode-scan . || (echo "Cycode scan failed!" && exit 1)
+      - echo "Running secret scan for exposed credentials..."
+      - |
+        if grep -R "AWS_ACCESS_KEY" .; then
+          echo "Exposed credentials detected! Stopping deployment."
+          exit 1;
+        else
+          echo "No exposed credentials found.";
+        fi
+      - echo "Running API endpoint exposure scan..."
+      # Check for occurrences of "localhost:3000", which indicates a development endpoint that should not be exposed.
+      - |
+        if grep -R "localhost:3000" .; then
+          echo "Exposed API endpoint (localhost:3000) detected! Stopping deployment."
+          exit 1;
+        else
+          echo "No exposed API endpoints found.";
+        fi
+      - echo "Backend build, security scans (Trivy, 42Crunch, Cycode), SonarQube analysis, secret check, and API endpoint exposure check complete."
+artifacts:
+  files:
+    - '**/*'

@@ -1,0 +1,12 @@
+{
+  "name": "simple-backend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.17.1",
+    "body-parser": "^1.19.0"
+  },
+  "scripts": {
+    "start": "node src/app.js"
+  }
+}
