@@ -1,19 +1,22 @@
-variable "project_name" {
-  description = "Project name for tagging resources"
-  type        = string
-}
-
+# EC2 Instance Type
 variable "instance_type" {
   description = "EC2 instance type to use"
   type        = string
   default     = "t2.micro"
 }
 
-variable "subnet_id" {
-  description = "The Subnet ID where the EC2 instances will be deployed"
+# Subnet IDs for EC2 Instances
+variable "public_subnet_id" {
+  description = "The Public Subnet ID where the frontend EC2 instance will be deployed"
   type        = string
 }
 
+variable "private_subnet_id" {
+  description = "The Private Subnet ID where the backend EC2 instance will be deployed"
+  type        = string
+}
+
+# AMI IDs for EC2 Instances
 variable "frontend_ami" {
   description = "AMI ID for the frontend EC2 instance"
   type        = string
@@ -24,6 +27,7 @@ variable "backend_ami" {
   type        = string
 }
 
+# Security Group IDs for EC2 Instances
 variable "frontend_sg_id" {
   description = "Security Group ID for the frontend instance"
   type        = string
@@ -34,6 +38,7 @@ variable "backend_sg_id" {
   type        = string
 }
 
+# GitHub Repositories for Frontend and Backend
 variable "frontend_repo_url" {
   description = "GitHub repository URL for the frontend application"
   type        = string
