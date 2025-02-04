@@ -40,20 +40,17 @@ resource "aws_instance" "backend" {
   ami                    = var.backend_ami
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.private.id
-  vpc_security_group_ids = [aws_security_group.backend_sg.id]
+  security_groups        = [aws_security_group.backend_sg.id]
+  key_name               = var.key_name
 
   user_data = <<-EOF
-    #!/bin/bash
-    sudo yum update -y
-    sudo yum install -y git
-    git clone ${var.backend_repo_url} /home/ec2-user/backend
-    cd /home/ec2-user/backend
-    npm install
-    nohup npm start & 
-  EOF
+              #!/bin/bash
+              echo "DATABASE_URL=${aws_db_instance.my_database.endpoint}" >> /etc/environment
+              echo "DATABASE_USER=${aws_db_instance.my_database.username}" >> /etc/environment
+              echo "DATABASE_PASSWORD=${var.database_password}" >> /etc/environment
+              EOF
 
   tags = {
     Name = "${var.application_name}-backend"
   }
 }
-
