@@ -98,3 +98,20 @@ resource "aws_security_group" "backend_sg" {
     Name = "${var.application_name}-backend-sg"
   }
 }
+resource "aws_security_group" "db_sg" {
+  name        = "database-sg"
+  description = "Allow MySQL traffic from backend"
+  vpc_id      = aws_vpc.my_vpc.id
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = [aws_subnet.private.cidr_block] # Allow access only from private subnet
+  }
+
+  tags = {
+    Name = "${var.application_name}-db-sg"
+  }
+}
+
