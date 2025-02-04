@@ -1,20 +1,29 @@
-//This file exports key information from the module so that it can be referenced in other parts of your Terraform configuration (for example, when setting up EC2 instances or RDS).
-output "frontend_instance_id" {
-  description = "The ID of the frontend EC2 instance"
-  value       = aws_instance.frontend.id
+# VPC ID
+output "vpc_id" {
+  description = "The ID of the created VPC"
+  value       = aws_vpc.my_vpc.id
 }
 
-output "frontend_public_ip" {
-  description = "The public IP address of the frontend EC2 instance"
-  value       = aws_instance.frontend.public_ip
+# Public Subnet ID
+output "public_subnet_id" {
+  description = "The ID of the public subnet"
+  value       = aws_subnet.public.id
 }
 
-output "backend_instance_id" {
-  description = "The ID of the backend EC2 instance"
-  value       = aws_instance.backend.id
+# Private Subnet ID
+output "private_subnet_id" {
+  description = "The ID of the private subnet"
+  value       = aws_subnet.private.id
 }
 
-output "backend_public_ip" {
-  description = "The public IP address of the backend EC2 instance"
-  value       = aws_instance.backend.public_ip
+# Internet Gateway ID
+output "internet_gateway_id" {
+  description = "The ID of the internet gateway"
+  value       = aws_internet_gateway.igw.id
+}
+
+# Public Route Table ID
+output "public_route_table_id" {
+  description = "The ID of the public route table"
+  value       = aws_route_table.public_rt.id
 }
