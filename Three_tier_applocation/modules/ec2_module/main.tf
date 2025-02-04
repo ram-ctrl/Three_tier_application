@@ -1,57 +1,59 @@
-// Provision Frontend EC2 Instance
+# Frontend EC2
 resource "aws_instance" "frontend" {
   ami                         = var.frontend_ami
   instance_type               = var.instance_type
-  subnet_id                   = var.subnet_id
-  vpc_security_group_ids      = [var.frontend_sg_id]
+  subnet_id                   = aws_subnet.public.id
+  vpc_security_group_ids      = [aws_security_group.frontend_sg.id]
   associate_public_ip_address = true
 
   user_data = <<-EOF
     #!/bin/bash
-    # Update the system
     sudo yum update -y
-    # Install Git and Node.js (if not included in the AMI)
-    sudo yum install -y git
-    # Optional: Install Node.js if needed:
-    # curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
-    # sudo yum install -y nodejs
-    # Clone the frontend repository and start the application
+    sudo yum install -y git nginx
     git clone ${var.frontend_repo_url} /home/ec2-user/frontend
     cd /home/ec2-user/frontend
     npm install
     nohup npm start &
+
+    # Configure Nginx to proxy requests to backend
+    cat <<EOT > /etc/nginx/nginx.conf
+    events {}
+    http {
+      server {
+        listen 80;
+        location /api/ {
+          proxy_pass http://${aws_instance.backend.private_ip}:3000/;
+        }
+      }
+    }
+    EOT
+    sudo systemctl restart nginx
   EOF
 
   tags = {
-    Name = "${var.project_name}-frontend"
+    Name = "${var.application_name}-frontend"
   }
 }
 
-# Provision Backend EC2 Instance
+# Backend EC2 (Private)
 resource "aws_instance" "backend" {
-  ami                         = var.backend_ami
-  instance_type               = var.instance_type
-  subnet_id                   = var.subnet_id
-  vpc_security_group_ids      = [var.backend_sg_id]
-  associate_public_ip_address = true
+  ami                    = var.backend_ami
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.private.id
+  vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
   user_data = <<-EOF
     #!/bin/bash
-    # Update the system
     sudo yum update -y
-    # Install Git and Node.js (if not included in the AMI)
     sudo yum install -y git
-    # Optional: Install Node.js if needed:
-    # curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
-    # sudo yum install -y nodejs
-    # Clone the backend repository and start the application
     git clone ${var.backend_repo_url} /home/ec2-user/backend
     cd /home/ec2-user/backend
     npm install
-    nohup npm start &
+    nohup npm start & 
   EOF
 
   tags = {
-    Name = "${var.project_name}-backend"
+    Name = "${var.application_name}-backend"
   }
 }
+
