@@ -6,7 +6,7 @@ availability_zone = "us-east-1"
 
 instance_type        = "t2.micro"
 
-# Example Amazon Linux 2 AMI in us-east-1:
+# Example Amazon Linux 2 AMI in us-east-1
 frontend_ami         = "ami-0c94855ba95c71c99"
 backend_ami          = "ami-0c94855ba95c71c99"
 
