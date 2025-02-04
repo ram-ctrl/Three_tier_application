@@ -1,27 +1,35 @@
+# Application Name for tagging resources
 variable "application_name" {
-  description = "application name for tagging the resources"
-  type = string
+  description = "Application name for tagging the resources"
+  type        = string
 }
 
-# A CIDR block (Classless Inter-Domain Routing block) it  specifies a range of IP addresses. 
-# It is commonly used to define the network address space for resources like a VPC 
+# CIDR Block for VPC
 variable "vpc_cidr" {
-  description = "CIDR block for vpc"
-  type = string
+  description = "CIDR block for VPC"
+  type        = string
 }
 
+# CIDR Block for Public Subnet
 variable "public_subnet_cidr" {
   description = "CIDR block for public subnet"
-  type = string
+  type        = string
 }
 
+# CIDR Block for Private Subnet
 variable "private_subnet_cidr" {
-  description = "CIDR block for subnet"
-  type = string
-  
+  description = "CIDR block for private subnet"
+  type        = string
 }
+
+# Availability Zone for the Subnets
 variable "availability_zone" {
   description = "Availability zone for subnet"
-  type = string
-  
+  type        = string
+}
+
+# Project Name for tagging resources
+variable "project_name" {
+  description = "Project name for tagging resources"
+  type        = string
 }
