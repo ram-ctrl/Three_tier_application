@@ -41,6 +41,28 @@ resource "aws_codepipeline" "ci_cd_pipeline" {
 
       configuration = {
         ProjectName = aws_codebuild_project.codebuild_project.name
+        EnvironmentVariables = jsonencode([
+          {
+            name  = "DB_HOST"
+            value = module.rds.db_instance_endpoint
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "DB_NAME"
+            value = var.db_name
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "DB_USER"
+            value = var.db_username
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "DB_PASSWORD"
+            value = data.aws_secretsmanager_secret_version.db_password.secret_string
+            type  = "SECRETS_MANAGER"
+          }
+        ])
       }
     }
   }
@@ -59,6 +81,28 @@ resource "aws_codepipeline" "ci_cd_pipeline" {
       configuration = {
         ApplicationName     = aws_codedeploy_app.my_app.name
         DeploymentGroupName = aws_codedeploy_deployment_group.my_app_deployment_group.deployment_group_name
+        EnvironmentVariables = jsonencode([
+          {
+            name  = "DB_HOST"
+            value = module.rds.db_instance_endpoint
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "DB_NAME"
+            value = var.db_name
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "DB_USER"
+            value = var.db_username
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "DB_PASSWORD"
+            value = data.aws_secretsmanager_secret_version.db_password.secret_string
+            type  = "SECRETS_MANAGER"
+          }
+        ])
       }
     }
   }
